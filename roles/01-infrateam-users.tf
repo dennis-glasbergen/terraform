@@ -1,5 +1,5 @@
 resource "azuread_group" "infra_group" {
-  display_name = "CDLAPP-DHL-Parcel-NL-InfraTeam-Users"
+  display_name = "CDLAPP-InfraTeam-Users"
   description  = "Usergroup for Infra Team Users"
   owners = [
     for owners in data.azuread_user.infra_admins : owners.object_id
@@ -13,8 +13,8 @@ resource "azuread_group" "infra_group" {
 variable "infra_admins" {
   type = list(any)
   default = [
-    "jpost@dhlp.io",
-    "dglasbergen@dhlp.io"
+    "",
+    "dglasbergen@dennisg.io"
     
   ]
 }

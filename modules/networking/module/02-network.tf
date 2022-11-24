@@ -12,7 +12,7 @@ resource "azurerm_virtual_network" "vnet" {
 resource "azurerm_private_dns_zone_virtual_network_link" "dns" {
   name                  = "${var.rg_prefix}-vnet-link"
   resource_group_name   = var.rg_nw_services
-  private_dns_zone_name = "intra.dhlparcel.io"
+  private_dns_zone_name = "intra.dennisg.io"
   virtual_network_id    = azurerm_virtual_network.vnet.id
   registration_enabled  = true
 }
