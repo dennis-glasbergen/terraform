@@ -1,0 +1,23 @@
+variable "application_users" {
+  type = list(any)
+  default = [
+    "jacques.herman@dhl.com",
+    "bob.de_beer@dhl.com",
+    "frank.bennink@dhl.com",
+    "alwin.knop@dhl.com",
+    "jacco.bakker@dhl.com",
+    "frans.lokhorst@dhl.com",
+    "rinke.doeser@dhl.com",
+    "luit.wit@dhl.com"
+  ]
+}
+
+variable "infra_admins" {
+  type = list(any)
+  default = [
+    "paul.tierlier@dhl.com",
+    "wybo.reeb-gruber@dhl.com",
+    "jasper.post@dhl.com",
+    "dennis.glasbergen@dhl.com"
+  ]
+}

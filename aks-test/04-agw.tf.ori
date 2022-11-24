@@ -1,0 +1,105 @@
+# Create a public IP for the AGW
+resource "azurerm_public_ip" "agw" {
+  name                = "${var.rg_prefix}-agw-pubip"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  allocation_method   = "Static"
+  sku		      = "Standard"
+
+  tags = var.tags
+}
+
+resource "azurerm_application_gateway" "agw" {
+  name                = "${var.rg_prefix}-agw"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+
+  sku {
+    name     = var.app_gateway_sku
+    tier     = var.app_gateway_tier
+    capacity = 2
+  }
+
+  gateway_ip_configuration {
+    name      = "${var.rg_prefix_short}-ipconf"
+    subnet_id = data.azurerm_subnet.agw.id
+  }
+
+  frontend_port {
+    name = "${var.rg_prefix_short}-fehttp"
+    port = 80
+  }
+
+  frontend_port {
+    name = "${var.rg_prefix_short}-fehttps"
+    port = 443
+  }
+
+  frontend_ip_configuration {
+    name                          = "${var.rg_prefix_short}-feip-pub"
+    public_ip_address_id          = azurerm_public_ip.agw.id
+  }
+
+  frontend_ip_configuration {
+    name                          = "${var.rg_prefix_short}-feip-priv"
+    subnet_id			  = data.azurerm_subnet.agw.id
+    private_ip_address            = var.agw_private_ip
+    private_ip_address_allocation = "Static"
+  }
+
+  backend_address_pool {
+    name = "${var.rg_prefix_short}-beap"
+  }
+
+  backend_http_settings {
+    name                  = "${var.rg_prefix_short}-beconfig"
+    cookie_based_affinity = "Disabled"
+    port                  = 80
+    protocol              = "Http"
+    request_timeout       = 1
+  }
+
+  http_listener {
+    name                           = "${var.rg_prefix_short}-listener"
+    frontend_ip_configuration_name = "${var.rg_prefix_short}-feip-priv"
+    frontend_port_name             = "${var.rg_prefix_short}-fehttp"
+    protocol                       = "Http"
+  }
+
+  request_routing_rule {
+    name                       = "${var.rg_prefix_short}-rqrt"
+    rule_type                  = "Basic"
+    http_listener_name         = "${var.rg_prefix_short}-listener"
+    backend_address_pool_name  = "${var.rg_prefix_short}-beap"
+    backend_http_settings_name = "${var.rg_prefix_short}-beconfig"
+  }
+
+  dynamic "ssl_certificate" {
+    for_each = var.certificate_list
+    content {
+       name = ssl_certificate.value.name
+       data = filebase64("certs/${ssl_certificate.value.data}")
+       password = ssl_certificate.value.password
+    }
+  }
+
+  #lifecycle {
+  #  ignore_changes = all
+  #}
+
+  # Needed to prevent conflicts with AKS AGW deployments
+  lifecycle {
+    ignore_changes = [
+      tags,
+      backend_address_pool,
+      backend_http_settings,
+      request_routing_rule,
+      frontend_port,
+      http_listener,
+      probe,
+      identity
+    ]
+  }
+
+  tags = var.tags
+}

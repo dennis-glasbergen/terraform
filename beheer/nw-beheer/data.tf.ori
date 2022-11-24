@@ -1,0 +1,34 @@
+data "azurerm_client_config" "current" {
+}
+
+data "azurerm_resource_group" "iptunnel" {
+  name = "RG-IPTUNNEL-PROD"
+}
+
+data "azurerm_virtual_network" "iptunnel" {
+  name                = "vn-iptunnel-prod"
+  resource_group_name = "RG-IPTUNNEL-PROD"
+}
+
+data "azurerm_role_definition" "kv_cert_officer" {
+  name = "Key Vault Certificates Officer"
+}
+
+data "azurerm_role_definition" "kv_crypto_officer" {
+  name = "Key Vault Crypto Officer"
+}
+
+data "azurerm_role_definition" "kv_secrets_officer" {
+  name = "Key Vault Secrets Officer"
+}
+
+# Query the Principal ID for each user in infra_admins
+data "azuread_user" "infra_admins" {
+  for_each            = toset(var.infra_admins)
+  user_principal_name = format("%s", each.key)
+}
+
+data "sops_file" "tooling_passwords" {
+  source_file = "passwords.enc.yaml"
+  input_type = "yaml"
+}

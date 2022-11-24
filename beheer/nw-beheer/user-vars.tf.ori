@@ -1,0 +1,9 @@
+variable "infra_admins" {
+  type = list
+  default = [
+  "paul.tierlier@dhl.com",
+  "wybo.reeb-gruber@dhl.com",
+  "jasper.post@dhl.com",
+  "dennis.glasbergen@dhl.com"
+  ]
+}
